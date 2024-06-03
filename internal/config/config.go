@@ -192,6 +192,7 @@ func Init() {
 	// create a default configuration to use if no config file is provided
 	globalConf = globalConfig{
 		Common: common.Configuration{
+			ServiceName: "SFTPGo",
 			IdleTimeout: 15,
 			UploadMode:  0,
 			Actions: common.ProtocolActions{
@@ -1972,6 +1973,7 @@ func getCommandConfigsFromEnv(idx int) {
 }
 
 func setViperDefaults() {
+	viper.SetDefault("common.service_name", globalConf.Common.ServiceName)
 	viper.SetDefault("common.idle_timeout", globalConf.Common.IdleTimeout)
 	viper.SetDefault("common.upload_mode", globalConf.Common.UploadMode)
 	viper.SetDefault("common.actions.execute_on", globalConf.Common.Actions.ExecuteOn)

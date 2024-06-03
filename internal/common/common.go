@@ -493,6 +493,7 @@ type MetadataConfig struct {
 
 // Configuration defines configuration parameters common to all supported protocols
 type Configuration struct {
+	ServiceName string `json:"service_name" mapstructure:"service_name"`
 	// Maximum idle timeout as minutes. If a client is idle for a time that exceeds this setting it will be disconnected.
 	// 0 means disabled
 	IdleTimeout int `json:"idle_timeout" mapstructure:"idle_timeout"`

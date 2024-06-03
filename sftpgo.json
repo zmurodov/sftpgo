@@ -1,5 +1,6 @@
 {
   "common": {
+    "service_name": "SFTPGo",
     "idle_timeout": 15,
     "upload_mode": 0,
     "actions": {

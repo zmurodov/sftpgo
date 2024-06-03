@@ -16,6 +16,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/drakkan/sftpgo/v2/internal/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,7 +38,7 @@ import (
 )
 
 const (
-	serviceName     = "SFTPGo"
+	//serviceName     = "SFTPGo"
 	serviceDesc     = "Full-featured and highly configurable file transfer server"
 	rotateLogCmd    = svc.Cmd(128)
 	acceptRotateLog = svc.Accepted(rotateLogCmd)
@@ -189,6 +190,14 @@ func (s *WindowsService) RunService() error {
 		return err
 	}
 
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+
 	isService, err := svc.IsWindowsService()
 	if err != nil {
 		return err
@@ -202,16 +211,24 @@ func (s *WindowsService) RunService() error {
 	if s.isInteractive {
 		return s.Start()
 	}
-	return svc.Run(serviceName, s)
+	return svc.Run(commonConfig.ServiceName, s)
 }
 
 func (s *WindowsService) Start() error {
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+
 	m, err := mgr.Connect()
 	if err != nil {
 		return err
 	}
 	defer m.Disconnect()
-	service, err := m.OpenService(serviceName)
+	service, err := m.OpenService(commonConfig.ServiceName)
 	if err != nil {
 		return fmt.Errorf("could not access service: %v", err)
 	}
@@ -224,12 +241,21 @@ func (s *WindowsService) Start() error {
 }
 
 func (s *WindowsService) Reload() error {
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+
 	m, err := mgr.Connect()
 	if err != nil {
 		return err
 	}
 	defer m.Disconnect()
-	service, err := m.OpenService(serviceName)
+	service, err := m.OpenService(commonConfig.ServiceName)
+
 	if err != nil {
 		return fmt.Errorf("could not access service: %v", err)
 	}
@@ -242,12 +268,21 @@ func (s *WindowsService) Reload() error {
 }
 
 func (s *WindowsService) RotateLogFile() error {
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+
 	m, err := mgr.Connect()
 	if err != nil {
 		return err
 	}
 	defer m.Disconnect()
-	service, err := m.OpenService(serviceName)
+	service, err := m.OpenService(commonConfig.ServiceName)
+
 	if err != nil {
 		return fmt.Errorf("could not access service: %v", err)
 	}
@@ -269,6 +304,21 @@ func (s *WindowsService) Install(args ...string) error {
 		return err
 	}
 	defer m.Disconnect()
+
+	fmt.Printf("ConfigDir %s\n", s.Service.ConfigDir)
+	fmt.Printf("ConfigFile %s\n", s.Service.ConfigFile)
+
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+	serviceName := commonConfig.ServiceName
+
+	fmt.Printf("Service name: %s\n", serviceName)
+
 	service, err := m.OpenService(serviceName)
 	if err == nil {
 		service.Close()
@@ -318,6 +368,16 @@ func (s *WindowsService) Uninstall() error {
 		return err
 	}
 	defer m.Disconnect()
+
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+	serviceName := commonConfig.ServiceName
+
 	service, err := m.OpenService(serviceName)
 	if err != nil {
 		return fmt.Errorf("service %s is not installed", serviceName)
@@ -340,6 +400,16 @@ func (s *WindowsService) Stop() error {
 		return err
 	}
 	defer m.Disconnect()
+
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+	serviceName := commonConfig.ServiceName
+
 	service, err := m.OpenService(serviceName)
 	if err != nil {
 		return fmt.Errorf("could not access service: %v", err)
@@ -369,6 +439,16 @@ func (s *WindowsService) Status() (Status, error) {
 		return StatusUnknown, err
 	}
 	defer m.Disconnect()
+
+	err2 := config.LoadConfig(s.Service.ConfigDir, s.Service.ConfigFile)
+	if err2 != nil {
+		logger.Error(logSender, "", "error loading configuration: %v", err2)
+		return StatusUnknown, err2
+	}
+
+	commonConfig := config.GetCommonConfig()
+	serviceName := commonConfig.ServiceName
+
 	service, err := m.OpenService(serviceName)
 	if err != nil {
 		return StatusUnknown, fmt.Errorf("could not access service: %v", err)
